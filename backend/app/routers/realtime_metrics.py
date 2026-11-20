@@ -11,6 +11,7 @@ from fastapi.responses import StreamingResponse
 
 from app.schemas import ActionPayload, ActionResult, EntryPayload
 from app.services.realtime_metrics import RealtimeMetricsService
+from app.services.metric_source_switch import metric_source_switch_service
 
 router = APIRouter(prefix="/api/realtime_metrics", tags=["实时指标"])
 service = RealtimeMetricsService()
@@ -27,11 +28,21 @@ def csv_cell(value: Any) -> str:
 
 @router.get("/summary")
 def get_summary() -> dict[str, Any]:
+    current_version = metric_source_switch_service.current_business_version()
     return {"metrics": [
         {"label": "覆盖数据源", "value": random.randint(12, 45), "trend": random.randint(-12, 25)},
         {"label": "最新指标值", "value": round(random.uniform(0.72, 0.99), 3), "trend": random.randint(-8, 15)},
         {"label": "异常记录", "value": random.randint(0, 8), "trend": -random.randint(1, 10)},
-    ]}
+    ], "current_version": current_version}
+
+
+@router.get("/source-check")
+def source_check() -> dict[str, Any]:
+    """实时指标页核对来源表：每个指标唯一当前来源表 + 当前业务版本。"""
+    return {
+        "items": metric_source_switch_service.list_sources(),
+        "current_version": metric_source_switch_service.current_business_version(),
+    }
 
 
 @router.get("")

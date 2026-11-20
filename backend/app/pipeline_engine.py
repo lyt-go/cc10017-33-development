@@ -418,6 +418,13 @@ class PipelineEngine:
         agg_window = metric.get("聚合窗口", "1h")
         agg_func = metric.get("聚合函数", "count")
 
+        # 取数来源跟随指标数据源切换计划：读取来源注册表里该指标唯一的当前来源表。
+        from app.services.metric_source_switch import metric_source_switch_service
+        resolved = metric_source_switch_service.resolve_metric_source(metric_id)
+        source_table = resolved["metric"].get("当前来源表") if resolved.get("ok") else None
+        source_plan = resolved["metric"].get("当前计划编号") if resolved.get("ok") else None
+        source_version = resolved["metric"].get("当前版本") if resolved.get("ok") else None
+
         # 查找关联的主题和Flink作业
         related_topics = [r for r in store.rows("topic_registry") if r.get("status") == "已上线"]
         related_flink = [r for r in store.rows("flink_job") if r.get("status") == "运行中"]
@@ -439,6 +446,9 @@ class PipelineEngine:
             "metric_id": metric_id,
             "metric_name": metric.get("指标名称"),
             "output_table": output_table,
+            "source_table": source_table,
+            "source_plan": source_plan,
+            "source_version": source_version,
             "agg_window": agg_window,
             "agg_func": agg_func,
             "computed_value": computed_value,
@@ -586,6 +596,9 @@ class PipelineEngine:
             "compact_results": len(store.rows("compact_results")),
             "ttl_applied_log": len(store.rows("ttl_applied_log")),
             "realtime_metric_results": len(store.rows("realtime_metric_results")),
+            "metric_switch_plans": len(store.rows("metric_switch_plans")),
+            "metric_switch_items": len(store.rows("metric_switch_items")),
+            "metric_switch_audit": len(store.rows("metric_switch_audit")),
         }
 
         return {

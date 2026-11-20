@@ -54,7 +54,19 @@ class Store:
             {"label": "异常量", "value": sum(int(item["abnormal"]) for item in modules)},
             {"label": "数据产物", "value": total_artifacts},
         ]
-        return {"cards": cards, "modules": modules, "artifacts": artifact_counts}
+        # 指标数据源切换计划产物（计划头/计划项/审计/来源注册表）。
+        switch_plan_counts = {
+            n: len(self.rows(n)) for n in (
+                "metric_switch_plans", "metric_switch_items",
+                "metric_switch_audit", "metric_source_registry",
+            )
+        }
+        return {
+            "cards": cards,
+            "modules": modules,
+            "artifacts": artifact_counts,
+            "metric_switch": switch_plan_counts,
+        }
 
 
 store = Store()

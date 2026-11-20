@@ -56,6 +56,8 @@
       </tbody>
     </table>
 
+    <SwitchPlanPanel />
+
     <div v-if="showCreate" class="modal-backdrop" data-testid="create-modal">
       <form class="modal" @submit.prevent="submitCreate">
         <h3>登记生命周期</h3>
@@ -83,6 +85,7 @@
 import { computed, onMounted, ref } from 'vue'
 
 import { request } from '@/api/client'
+import SwitchPlanPanel from './SwitchPlanPanel.vue'
 
 type Row = Record<string, string | number | null>
 
